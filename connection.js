@@ -1,11 +1,12 @@
+require('dotenv').config();
 var mysql= require('mysql');
 
 var connection = mysql.createConnection({
-    'host': 'sql12.freemysqlhosting.net',
-    'user': 'sql12625300',
-    'password': 'NLc2ArjhNR',
-    'database': 'sql12625300',
-    'port': '3306'
+    'host': process.env.db_host,
+    'user':process.env.user_name,
+    'password': process.env.password,
+    'database': process.env.db_name,
+    'port': process.env.port
 })
 
 connection.connect(function(err) {
@@ -14,7 +15,7 @@ connection.connect(function(err) {
     return;
   }
 
-  console.log('connected as id ' + connection.threadId);
+  console.log('Connected to the database!');
 });
 
 module.exports=connection;

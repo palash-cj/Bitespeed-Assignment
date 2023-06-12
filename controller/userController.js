@@ -1,12 +1,18 @@
-const {sendResponse, sendError} =require("./baseController")
-
+const userIdentify = require("../services/userService");
+const {sendResponse, sendError} =require("./baseController");
 
 const identifyUser=async(req,res)=>{
     try {
         var pNumber=req.body.phoneNumber;
         var email=req.body.email;
         if(pNumber!=undefined && pNumber!="" && email!=undefined && email!=""){
-
+            const data=await userIdentify(req);
+            console.log(data);
+            if(data.data!=null){
+                res.status(200).send(sendresponse(data.message,data.data));
+            }else{
+                res.status(500).send(sendError(data.message,data.data));
+            }
         }else{
             res.status(400).send(sendResponse("phoneNumber & email are required"));
         }
