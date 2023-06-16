@@ -38,7 +38,7 @@ npm start
 
 ## API Documentation
 
-/user/identify is the endpoint which is asked to be created
+/identify is the endpoint which is asked to be created
 
 ## Hosted App URL
 https://bitespeed-backend-task.onrender.com/
