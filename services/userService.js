@@ -5,10 +5,16 @@ const userIdentify = async (req) => {
   const email = req.body.email;
 
   try {
-    const results = await executeQuery('SELECT * FROM Contact WHERE email = ? OR phoneNumber = ?', [email, phoneNumber]);
+    let results = [];
 
+    if (phoneNumber !== null && email !== null) {
+      results = await executeQuery('SELECT * FROM Contact WHERE email = ? OR phoneNumber = ?', [email, phoneNumber]);
+    } else if (phoneNumber !== null) {
+      results = await executeQuery('SELECT * FROM Contact WHERE phoneNumber = ?', [phoneNumber]);
+    } else if (email !== null) {
+      results = await executeQuery('SELECT * FROM Contact WHERE email = ?', [email]);
+    }
     if (results.length === 0) {
-      console.log(13)
       const result = await executeQuery('INSERT INTO Contact (email, phoneNumber, linkPrecedence) VALUES (?, ?, "primary")', [email, phoneNumber]);
 
       const primaryContactId = result.insertId;
@@ -31,15 +37,12 @@ const userIdentify = async (req) => {
       });
       
       const primaryContactId = primaryContact.id;
-      const existingEmails = results
-        .map((contact) => contact.email)
-        .filter((value) => value !== null);
-      const existingPhoneNumbers = results
-        .map((contact) => contact.phoneNumber)
-        .filter((value) => value !== null);
+      const existingEmails = [...new Set(results.map((contact) => contact.email).filter((value) => value !== null && value !== undefined))];
+      const existingPhoneNumbers = [...new Set(results.map((contact) => contact.phoneNumber).filter((value) => value !== null && value !== undefined))];
 
-      if (!existingEmails.includes(email) || !existingPhoneNumbers.includes(phoneNumber)) {
-        const result = await executeQuery(
+      if ((!existingEmails.includes(email) && email!=null) || (!existingPhoneNumbers.includes(phoneNumber) && phoneNumber!=null)) {
+        let result;
+        result = await executeQuery(
           'INSERT INTO Contact (email, phoneNumber, linkedId, linkPrecedence) VALUES (?, ?, ?, "secondary")',
           [email, phoneNumber, primaryContactId]
         );
@@ -57,11 +60,20 @@ const userIdentify = async (req) => {
           message: 'Data fetched successfully',
         };
       }  else if(primaryContact.email===email && primaryContact.phoneNumber===phoneNumber) {
+        let fetched = [];
+        if(email!= null && phoneNumber!=null){
+          fetched=await executeQuery('SELECT * FROM Contact WHERE (email = ? OR phoneNumber = ? OR linkedId=?) AND id!=?', [email, phoneNumber, primaryContactId,primaryContactId]);
+        }else if(email==null && phoneNumber!=null){
+          fetched=await executeQuery('SELECT * FROM Contact WHERE (phoneNumber = ? OR linkedId=?) AND id!=?', [phoneNumber, primaryContactId,primaryContactId]);
+        }else{
+          fetched=await executeQuery('SELECT * FROM Contact WHERE (email = ? OR linkedId=?) AND id!=?', [email,primaryContactId,primaryContactId]);
+        }
+        const existingSecondaryIds = [...new Set(fetched.map((contact) => contact.id).filter((value) => value !== null))];
         const contact = {
           primaryContatctId: primaryContactId,
           emails: existingEmails,
           phoneNumbers: existingPhoneNumbers,
-          secondaryContactIds: [],
+          secondaryContactIds: existingSecondaryIds,
         };
 
         return {
@@ -74,11 +86,16 @@ const userIdentify = async (req) => {
           [primaryContactId, primaryContactId]
         );
 
-        const fetched = await executeQuery('SELECT * FROM Contact WHERE (email = ? OR phoneNumber = ?) AND id!=?', [email, phoneNumber, primaryContactId]);
-        
-        const existingSecondaryIds = fetched
-        .map((contact) => contact.id)
-        .filter((value) => value !== null);
+        let fetched = [];
+        if(email!= null && phoneNumber!=null){
+          fetched=await executeQuery('SELECT * FROM Contact WHERE (email = ? OR phoneNumber = ? OR linkedId=?) AND id!=?', [email, phoneNumber, primaryContactId,primaryContactId]);
+        }else if(email==null && phoneNumber!=null){
+          fetched=await executeQuery('SELECT * FROM Contact WHERE (phoneNumber = ? OR linkedId=?) AND id!=?', [phoneNumber, primaryContactId,primaryContactId]);
+        }else{
+          fetched=await executeQuery('SELECT * FROM Contact WHERE (email = ? OR linkedId=?) AND id!=?', [email,primaryContactId,primaryContactId]);
+        }
+        const existingSecondaryIds = [...new Set(fetched.map((contact) => contact.id).filter((value) => value !== null))];
+
         const contact = {
           primaryContatctId: primaryContactId,
           emails: existingEmails,
