@@ -7,9 +7,8 @@ const identifyUser=async(req,res)=>{
         var email=req.body.email;
         if(pNumber!=undefined && pNumber!="" && email!=undefined && email!=""){
             const data=await userIdentify(req);
-            console.log(data);
             if(data.data!=null){
-                res.status(200).send(sendresponse(data.message,data.data));
+                res.status(200).send(sendResponse(data.message,data.data));
             }else{
                 res.status(500).send(sendError(data.message,data.data));
             }
