@@ -1,6 +1,13 @@
 const userIdentify = require("../services/userService");
 const {sendResponse, sendError} =require("./baseController");
 
+
+
+/**
+ * identifyUser : Identifies the user based on the data stored in db, if user exists it retrieves the data else adds the data to the db and returns the respective response
+ * @param {email, phoneNumber} req 
+ * @param {primaryContactId, emails, phoneNumbers, secondaryContactIds} res 
+ */
 const identifyUser=async(req,res)=>{
     try {
         var pNumber=req.body.phoneNumber;
