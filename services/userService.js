@@ -48,12 +48,29 @@ const userIdentify = async (req) => {
         );
 
         const secondaryContactId = result.insertId;
-        const contact = {
-          primaryContatctId: primaryContactId,
-          emails: existingEmails.concat(email),
-          phoneNumbers: existingPhoneNumbers.concat(phoneNumber),
-          secondaryContactIds: [secondaryContactId],
-        };
+        var contact;
+        if((!existingEmails.includes(email) && email!=null) && (!existingPhoneNumbers.includes(phoneNumber) && phoneNumber!=null)){
+          const contact = {
+            primaryContatctId: primaryContactId,
+            emails: existingEmails.concat(email),
+            phoneNumbers: existingPhoneNumbers.concat(phoneNumber),
+            secondaryContactIds: [secondaryContactId],
+          };
+        }else if(!existingPhoneNumbers.includes(phoneNumber) && phoneNumber!=null){
+          contact = {
+            primaryContatctId: primaryContactId,
+            emails: existingEmails,
+            phoneNumbers: existingPhoneNumbers.concat(phoneNumber),
+            secondaryContactIds: [secondaryContactId],
+          };
+        }else{
+          contact = {
+            primaryContatctId: primaryContactId,
+            emails: existingEmails.concat(email),
+            phoneNumbers: existingPhoneNumbers,
+            secondaryContactIds: [secondaryContactId],
+          };
+        }
 
         return {
           data: { contact },
